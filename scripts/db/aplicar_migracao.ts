@@ -1,8 +1,5 @@
 import { readFileSync } from "node:fs";
-import { config } from "dotenv";
-import { Client } from "pg";
-
-config({ path: ".env.local" });
+import { criarClientePostgres } from "./client";
 
 const caminhoArquivo = process.argv[2];
 if (!caminhoArquivo) {
@@ -12,14 +9,16 @@ if (!caminhoArquivo) {
 
 async function main() {
   const sql = readFileSync(caminhoArquivo, "utf-8");
-  const client = new Client({
-    connectionString: process.env.SUPABASE_DB_URL,
-    ssl: { rejectUnauthorized: false },
-  });
+  const client = criarClientePostgres();
   await client.connect();
   try {
+    await client.query("begin");
     await client.query(sql);
+    await client.query("commit");
     console.log(`Migração aplicada: ${caminhoArquivo}`);
+  } catch (erro) {
+    await client.query("rollback");
+    throw erro;
   } finally {
     await client.end();
   }

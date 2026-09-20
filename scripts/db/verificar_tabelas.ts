@@ -1,19 +1,18 @@
-import { config } from "dotenv";
-import { Client } from "pg";
-
-config({ path: ".env.local" });
+import { criarClientePostgres } from "./client";
 
 async function main() {
-  const client = new Client({
-    connectionString: process.env.SUPABASE_DB_URL,
-    ssl: { rejectUnauthorized: false },
-  });
+  const client = criarClientePostgres();
   await client.connect();
   try {
-    const resultado = await client.query(
+    const tabelas = await client.query(
       "select table_name from information_schema.tables where table_schema = 'public' and table_name in ('pessoa', 'candidatura') order by table_name"
     );
-    console.log(resultado.rows);
+    console.log("Tabelas:", tabelas.rows);
+
+    const rls = await client.query(
+      "select relname, relrowsecurity from pg_class where relname in ('pessoa', 'candidatura') order by relname"
+    );
+    console.log("RLS:", rls.rows);
   } finally {
     await client.end();
   }

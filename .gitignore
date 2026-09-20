@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+# excecao: CA publica da Supabase, fixada para validar TLS do pooler (nao e segredo)
+!scripts/db/supabase-ca.pem
 
 # debug
 npm-debug.log*
