@@ -5,7 +5,7 @@ import type { CandidaturaTSE } from "./parse_candidatura";
 function gerarSlug(nomeCandidato: string): string {
   const base = nomeCandidato
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
@@ -33,9 +33,15 @@ export async function resolverPessoaId(
       .select("id")
       .eq("nome_civil", candidatura.nmCandidato)
       .eq("data_nascimento", candidatura.dataNascimento)
+      .eq("sg_uf_nascimento", candidatura.sgUfNascimento)
       .maybeSingle();
     if (error) throw error;
-    if (data) return data.id;
+    if (data) {
+      console.warn(
+        `[resolverPessoaId] Match por nome+nascimento (sem CPF): "${candidatura.nmCandidato}" -> pessoa ${data.id}`
+      );
+      return data.id;
+    }
   }
 
   const { data, error } = await supabase

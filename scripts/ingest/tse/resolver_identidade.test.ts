@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { supabaseServidor } from "../../../lib/supabase/server";
 import { resolverPessoaId } from "./resolver_identidade";
 import type { CandidaturaTSE } from "./parse_candidatura";
@@ -25,14 +25,20 @@ function candidaturaExemplo(sobrescreve: Partial<CandidaturaTSE> = {}): Candidat
   };
 }
 
-afterEach(async () => {
+async function limparPessoasDeTeste(): Promise<void> {
   await supabaseServidor.from("pessoa").delete().eq("cpf", CPF_TESTE);
   await supabaseServidor
     .from("pessoa")
     .delete()
     .eq("nome_civil", "MARIA DA SILVA TESTE")
     .is("cpf", null);
-});
+}
+
+// Protege contra resíduo de uma execução anterior que quebrou no meio (antes
+// do afterEach rodar) e poderia fazer um teste "passar" por engano ao
+// reaproveitar uma pessoa que já existia antes da chamada.
+beforeEach(limparPessoasDeTeste);
+afterEach(limparPessoasDeTeste);
 
 describe("resolverPessoaId", () => {
   it("cria pessoa nova na primeira chamada e reaproveita na segunda, pelo CPF", async () => {
@@ -54,5 +60,23 @@ describe("resolverPessoaId", () => {
     );
 
     expect(segundoId).toBe(primeiroId);
+  });
+
+  it("mesmo nome + data de nascimento mas UF de nascimento diferente resolve para pessoas diferentes (evita colisão de homônimo)", async () => {
+    const candidaturaRR = candidaturaExemplo({
+      cpf: null,
+      sgUfNascimento: "RR",
+      sqCandidatoTse: "999999999999995",
+    });
+    const candidaturaSP = candidaturaExemplo({
+      cpf: null,
+      sgUfNascimento: "SP",
+      sqCandidatoTse: "999999999999994",
+    });
+
+    const idRR = await resolverPessoaId(supabaseServidor, candidaturaRR);
+    const idSP = await resolverPessoaId(supabaseServidor, candidaturaSP);
+
+    expect(idRR).not.toBe(idSP);
   });
 });
