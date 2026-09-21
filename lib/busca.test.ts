@@ -67,4 +67,20 @@ describe("buscarPoliticos", () => {
     const resultados = await buscarPoliticos("a");
     expect(resultados).toEqual([]);
   });
+
+  it("sanitiza termo com caracteres especiais sem lançar erro e sem tratar '_' como coringa do ilike", async () => {
+    // ',' e '(' ')' são metacaracteres do filtro .or() do PostgREST — devem
+    // ser removidos sem quebrar a chamada (se não fossem, isto lançaria).
+    const resultados = await buscarPoliticos("Teste Busca,()%_");
+    expect(Array.isArray(resultados)).toBe(true);
+
+    // '_' é coringa de 1 caractere no ILIKE do Postgres. Sem escapar, o termo
+    // "Teste_Busca" bateria com "TESTE BUSCA" (o espaço central contaria como
+    // o caractere coringa) — um falso positivo. Com o '_' tratado como
+    // literal, não deve encontrar a pessoa de teste (que tem espaço, não
+    // underscore, entre "Teste" e "Busca").
+    const comCoringaLiteral = await buscarPoliticos("Teste_Busca");
+    const encontrados = comCoringaLiteral.filter((r) => r.slug === SLUG_TESTE);
+    expect(encontrados).toHaveLength(0);
+  });
 });

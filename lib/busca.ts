@@ -37,6 +37,17 @@ export async function buscarPoliticos(termo: string): Promise<ResultadoBusca[]> 
   const termoSeguro = termoLimpo.replace(/[,()]/g, "").trim().slice(0, TAMANHO_MAX_TERMO);
   if (termoSeguro.length < 2) return [];
 
+  // `%` e `_` são coringas do ILIKE do Postgres (qualquer sequência e um
+  // único caractere, respectivamente). Sem escapar, um termo como "silva_"
+  // faria o `_` virar coringa em vez de caractere literal, alargando o match
+  // além do esperado. A ordem importa: escapar a própria barra invertida
+  // primeiro, senão as barras adicionadas pelos passos seguintes seriam
+  // escapadas de novo.
+  const termoEscapado = termoSeguro
+    .replace(/\\/g, "\\\\")
+    .replace(/%/g, "\\%")
+    .replace(/_/g, "\\_");
+
   const { data, error } = await supabaseServidor
     .from("candidatura")
     .select(
@@ -44,9 +55,10 @@ export async function buscarPoliticos(termo: string): Promise<ResultadoBusca[]> 
     )
     .eq("oculto", false)
     .or(
-      `nm_urna.ilike.%${termoSeguro}%,sg_partido.ilike.%${termoSeguro}%,nr_candidato.eq.${termoSeguro}`
+      `nm_urna.ilike.%${termoEscapado}%,sg_partido.ilike.%${termoEscapado}%,nr_candidato.eq.${termoSeguro}`
     )
     .order("ano_eleicao", { ascending: false })
+    .order("nm_urna", { ascending: true })
     .limit(LOTE_BRUTO);
 
   if (error) throw error;

@@ -30,7 +30,7 @@ export default async function PaginaBusca({
           </li>
         ))}
       </ul>
-      {q && !termoValido && <p>Digite pelo menos 2 caracteres para buscar.</p>}
+      {q !== undefined && !termoValido && <p>Digite pelo menos 2 caracteres para buscar.</p>}
       {termoValido && resultados.length === 0 && (
         <p>Nenhum político encontrado para &quot;{termo}&quot;.</p>
       )}
