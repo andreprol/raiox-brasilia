@@ -4,6 +4,7 @@ export interface FichaPolitico {
   nome: string;
   candidaturas: {
     anoEleicao: number;
+    turno: number;
     cargo: string;
     sgUf: string;
     sgPartido: string;
@@ -25,16 +26,18 @@ export async function buscarFicha(slug: string): Promise<FichaPolitico | null> {
 
   const { data: candidaturas, error: erroCandidaturas } = await supabaseServidor
     .from("candidatura")
-    .select("ano_eleicao, cargo, sg_uf, sg_partido, situacao, fonte_url, coletado_em")
+    .select("ano_eleicao, turno, cargo, sg_uf, sg_partido, situacao, fonte_url, coletado_em")
     .eq("pessoa_id", pessoa.id)
     .eq("oculto", false)
-    .order("ano_eleicao", { ascending: false });
+    .order("ano_eleicao", { ascending: false })
+    .order("turno", { ascending: true });
   if (erroCandidaturas) throw erroCandidaturas;
 
   return {
     nome: pessoa.nome_civil,
     candidaturas: (candidaturas ?? []).map((c) => ({
       anoEleicao: c.ano_eleicao,
+      turno: c.turno,
       cargo: c.cargo,
       sgUf: c.sg_uf,
       sgPartido: c.sg_partido,
