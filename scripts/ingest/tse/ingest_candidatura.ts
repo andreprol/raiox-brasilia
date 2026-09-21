@@ -47,7 +47,15 @@ export async function ingerirCandidaturas2026(
   }
 
   const conteudoUtf8 = iconv.decode(arquivoBrasil.getData(), "latin1");
-  const candidaturas = parseCandidaturaCsv(conteudoUtf8);
+  let candidaturas: ReturnType<typeof parseCandidaturaCsv>;
+  try {
+    candidaturas = parseCandidaturaCsv(conteudoUtf8);
+  } catch (erro) {
+    console.error(
+      `[ingest_candidatura] Falha ao fazer parse do CSV: ${erro}. Dado já gravado foi mantido, nada foi alterado.`
+    );
+    return { processados: 0, comErro: 0, falhou: true };
+  }
 
   let processados = 0;
   let comErro = 0;
