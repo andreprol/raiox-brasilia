@@ -4,10 +4,15 @@ import { buscarPoliticos } from "@/lib/busca";
 export default async function PaginaBusca({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string | string[] }>;
 }) {
-  const { q } = await searchParams;
-  const resultados = q ? await buscarPoliticos(q) : [];
+  const { q: qBruto } = await searchParams;
+  // O Next.js retorna string[] quando a query tem chaves repetidas (?q=a&q=b);
+  // sem normalizar, buscarPoliticos() receberia um array e quebraria em .trim().
+  const q = Array.isArray(qBruto) ? qBruto[0] : qBruto;
+  const termo = q?.trim() ?? "";
+  const termoValido = termo.length >= 2;
+  const resultados = termoValido ? await buscarPoliticos(termo) : [];
 
   return (
     <main>
@@ -25,7 +30,10 @@ export default async function PaginaBusca({
           </li>
         ))}
       </ul>
-      {q && resultados.length === 0 && <p>Nenhum político encontrado para &quot;{q}&quot;.</p>}
+      {q && !termoValido && <p>Digite pelo menos 2 caracteres para buscar.</p>}
+      {termoValido && resultados.length === 0 && (
+        <p>Nenhum político encontrado para &quot;{termo}&quot;.</p>
+      )}
     </main>
   );
 }
