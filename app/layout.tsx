@@ -38,19 +38,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fraunces.variable} ${plexSans.variable} ${plexMono.variable}`}
     >
       <body>
+        <div className="fundo-foto" aria-hidden="true" />
         <div className="textura-scan" aria-hidden="true" />
         <header className="cabecalho">
           <Link href="/" className="cabecalho__marca">
             <svg viewBox="0 0 64 64" className="cabecalho__selo" aria-hidden="true">
-              <rect width="64" height="64" rx="12" fill="#0a1f14" />
-              <polygon points="32,8 58,32 32,56 6,32" fill="#f0b429" />
-              <circle cx="32" cy="32" r="12" fill="#1c3f94" />
-              <path
-                d="M 21 32 A 11 11 0 0 1 43 28"
-                stroke="#f5f3ec"
-                strokeWidth="2"
-                fill="none"
-              />
+              <rect width="64" height="64" rx="14" fill="#0a1f14" />
+              <polygon points="32,13 51,32 32,51 13,32" fill="#f0b429" />
+              <circle cx="32" cy="32" r="10" fill="#1c3f94" />
             </svg>
             <span className="cabecalho__texto">
               Raio<em>X</em> Brasília
@@ -63,6 +58,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <span>
             Dado público, fonte oficial em cada informação. Nenhum dado apagado — só
             oculto quando exigido por ordem judicial.
+          </span>
+          <span className="rodape-site__credito">
+            Foto de fundo: Esplanada dos Ministérios, por enioprado ·{" "}
+            <a
+              href="https://commons.wikimedia.org/wiki/File:Eixo_monumental_de_Bras%C3%ADlia_,_Esplanada_dos_Minist%C3%A9rios_e_Congresso_Nacional_-_panoramio.jpg"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              CC BY-SA 3.0, Wikimedia Commons
+            </a>
           </span>
         </footer>
       </body>

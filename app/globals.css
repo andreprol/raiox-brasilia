@@ -43,6 +43,28 @@ body {
   position: relative;
 }
 
+.fundo-foto {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url("/esplanada-ministerios.jpg");
+  background-size: cover;
+  background-position: center 38%;
+  filter: grayscale(0.6) brightness(0.38) contrast(1.12);
+}
+
+.fundo-foto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(9, 13, 19, 0.55) 0%,
+    rgba(9, 13, 19, 0.82) 55%,
+    var(--cor-fundo) 100%
+  );
+}
+
 .textura-scan {
   position: fixed;
   inset: 0;
@@ -123,16 +145,6 @@ a {
   overflow: hidden;
   padding: clamp(2.5rem, 7vw, 5rem) clamp(1.25rem, 4vw, 3rem) clamp(2rem, 5vw, 3rem);
   border-bottom: 1px solid var(--cor-borda);
-}
-
-.hero__congresso {
-  position: absolute;
-  inset: auto 0 -18px 0;
-  width: 100%;
-  height: auto;
-  color: var(--cor-verde);
-  opacity: 0.55;
-  z-index: 0;
 }
 
 .hero__conteudo {
@@ -454,6 +466,23 @@ a {
   font-size: 0.72rem;
   color: var(--cor-texto-suave);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rodape-site__credito {
+  opacity: 0.7;
+  font-size: 0.68rem;
+}
+
+.rodape-site__credito a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.rodape-site__credito a:hover {
+  color: var(--cor-amarelo);
 }
 
 .correcao-link {

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { buscarPoliticos } from "@/lib/busca";
-import { CongressoIlustracao } from "./components/Congresso";
 
 export default async function PaginaBusca({
   searchParams,
@@ -18,7 +17,6 @@ export default async function PaginaBusca({
   return (
     <>
       <section className="hero">
-        <CongressoIlustracao className="hero__congresso" />
         <div className="hero__conteudo">
           <span className="hero__kicker">candidatura · votação · processo · apoio</span>
           <h1 className="hero__titulo">
