@@ -38,7 +38,7 @@ export default async function PaginaFicha({
         <span className="ficha__rotulo">Dossiê público</span>
         <h1 className="ficha__nome">{ficha.nome}</h1>
         {cargoAtual && (
-          <p className="resultado-card__meta" style={{ marginTop: "0.4rem" }}>
+          <p className="ficha__meta">
             {cargoAtual.cargo} · {cargoAtual.sgPartido} · {cargoAtual.sgUf}
           </p>
         )}
