@@ -1,19 +1,6 @@
 import { notFound } from "next/navigation";
 import { buscarFicha } from "@/lib/ficha";
-
-// `fonte_url` vem do pipeline de ingestão do TSE e não tem validação de
-// formato no banco (é `NOT NULL`, mas nada garante o esquema). Renderizar
-// direto como `href` permitiria, em tese, um valor `javascript:`/`data:`
-// virar link clicável (XSS armazenado). Só tratamos como link de verdade
-// quando é uma URL http(s) válida; qualquer outra coisa vira texto plano.
-function comoLinkSeguro(url: string): string | null {
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === "http:" || parsed.protocol === "https:" ? url : null;
-  } catch {
-    return null;
-  }
-}
+import { comoLinkSeguro } from "@/lib/links";
 
 export default async function PaginaFicha({
   params,
