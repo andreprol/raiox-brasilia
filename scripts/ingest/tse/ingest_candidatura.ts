@@ -1,9 +1,14 @@
 import AdmZip from "adm-zip";
 import iconv from "iconv-lite";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { config as configurarDotenv } from "dotenv";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { parseCandidaturaCsv } from "./parse_candidatura";
 import { resolverPessoaId } from "./resolver_identidade";
-import { supabaseServidor } from "../../../lib/supabase/server";
+
+// Este script roda como CLI standalone (node/tsx puro), fora do Next.js —
+// nunca é importado por código de página/bundle de cliente. Por isso constrói
+// seu próprio client aqui em vez de reusar `lib/supabase/server.ts`, que tem
+// `import "server-only"` no topo e lança exceção fora do runtime do Next.js.
 
 const URL_ZIP =
   "https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2026.zip";
@@ -15,7 +20,7 @@ export interface ResultadoIngestao {
 }
 
 export async function ingerirCandidaturas2026(
-  supabase: SupabaseClient = supabaseServidor
+  supabase: SupabaseClient
 ): Promise<ResultadoIngestao> {
   let buffer: Buffer;
   try {
@@ -109,7 +114,18 @@ export async function ingerirCandidaturas2026(
 }
 
 if (require.main === module) {
-  ingerirCandidaturas2026()
+  // Carrega .env.local explicitamente: rodando via CLI (fora do Next.js e
+  // fora do Vitest), nada mais injeta essas variáveis automaticamente.
+  configurarDotenv({ path: ".env.local" });
+
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error(
+      "[ingest_candidatura] SUPABASE_URL e/ou SUPABASE_SERVICE_ROLE_KEY não definidas em .env.local"
+    );
+    process.exit(1);
+  }
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  ingerirCandidaturas2026(supabase)
     .then((resultado) => {
       console.log(
         `[ingest_candidatura] Concluído: ${resultado.processados} candidatura(s) processada(s), ${resultado.comErro} com erro.`
