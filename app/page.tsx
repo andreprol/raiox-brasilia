@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { buscarPoliticos } from "@/lib/busca";
+import { CongressoIlustracao } from "./components/Congresso";
 
 export default async function PaginaBusca({
   searchParams,
@@ -15,25 +16,55 @@ export default async function PaginaBusca({
   const resultados = termoValido ? await buscarPoliticos(termo) : [];
 
   return (
-    <main>
-      <h1>RaioX Brasília</h1>
-      <form>
-        <input type="text" name="q" defaultValue={q} placeholder="Nome, número ou partido" />
-        <button type="submit">Buscar</button>
-      </form>
-      <ul>
-        {resultados.map((r) => (
-          <li key={r.pessoaId}>
-            <Link href={`/politico/${r.slug}`}>
-              {r.nome} — {r.cargoMaisRecente} — {r.partido}/{r.uf}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      {q !== undefined && !termoValido && <p>Digite pelo menos 2 caracteres para buscar.</p>}
-      {termoValido && resultados.length === 0 && (
-        <p>Nenhum político encontrado para &quot;{termo}&quot;.</p>
-      )}
-    </main>
+    <>
+      <section className="hero">
+        <CongressoIlustracao className="hero__congresso" />
+        <div className="hero__conteudo">
+          <span className="hero__kicker">candidatura · votação · processo · apoio</span>
+          <h1 className="hero__titulo">
+            A ficha completa de <span className="destaque">qualquer</span> político brasileiro
+          </h1>
+          <p className="hero__subtitulo">
+            Busque por nome, número de candidato ou partido. Cada dado vem com a fonte
+            oficial e a data em que foi coletado — sem interpretação, sem retoque.
+          </p>
+          <form className="busca-form" action="/">
+            <div className="busca-form__campo">
+              <input
+                type="text"
+                name="q"
+                defaultValue={q}
+                placeholder="Nome, número ou partido"
+                autoFocus
+              />
+            </div>
+            <button type="submit">Buscar</button>
+          </form>
+        </div>
+      </section>
+
+      <section className="resultados">
+        {resultados.length > 0 && (
+          <ul className="resultados__lista">
+            {resultados.map((r) => (
+              <li key={r.pessoaId}>
+                <Link href={`/politico/${r.slug}`} className="resultado-card">
+                  <div className="resultado-card__nome">{r.nome}</div>
+                  <div className="resultado-card__meta">
+                    {r.cargoMaisRecente} · {r.partido} · {r.uf}
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+        {q !== undefined && !termoValido && (
+          <p className="mensagem-estado">Digite pelo menos 2 caracteres para buscar.</p>
+        )}
+        {termoValido && resultados.length === 0 && (
+          <p className="mensagem-estado">Nenhum político encontrado para &quot;{termo}&quot;.</p>
+        )}
+      </section>
+    </>
   );
 }

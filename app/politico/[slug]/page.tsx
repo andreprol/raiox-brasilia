@@ -1,6 +1,19 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buscarFicha } from "@/lib/ficha";
 import { comoLinkSeguro } from "@/lib/links";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const ficha = await buscarFicha(slug);
+  if (!ficha) return {};
+  return { title: ficha.nome };
+}
 
 export default async function PaginaFicha({
   params,
@@ -13,23 +26,43 @@ export default async function PaginaFicha({
 
   const emailContato = process.env.NEXT_PUBLIC_EMAIL_CONTATO;
   const assuntoEmail = encodeURIComponent(`Correção na ficha: ${ficha.nome}`);
+  const cargoAtual = ficha.candidaturas[0];
 
   return (
-    <main>
-      <h1>{ficha.nome}</h1>
+    <div className="ficha">
+      <Link href="/" className="ficha__voltar">
+        ← Nova busca
+      </Link>
+
+      <header className="ficha__cabecalho">
+        <span className="ficha__rotulo">Dossiê público</span>
+        <h1 className="ficha__nome">{ficha.nome}</h1>
+        {cargoAtual && (
+          <p className="resultado-card__meta" style={{ marginTop: "0.4rem" }}>
+            {cargoAtual.cargo} · {cargoAtual.sgPartido} · {cargoAtual.sgUf}
+          </p>
+        )}
+      </header>
+
       <section>
-        <h2>Candidaturas</h2>
+        <h2 className="ficha__secao-titulo">Candidaturas</h2>
         {ficha.candidaturas.length === 0 ? (
-          <p>Sem candidatura registrada.</p>
+          <p className="sem-candidatura">Sem candidatura registrada.</p>
         ) : (
-          <ul>
+          <ul className="candidaturas">
             {ficha.candidaturas.map((c) => {
               const linkFonte = comoLinkSeguro(c.fonteUrl);
               return (
-                <li key={`${c.anoEleicao}-${c.turno}-${c.cargo}`}>
-                  {c.anoEleicao} — {c.cargo} ({c.sgUf}) — {c.sgPartido} — {c.situacao}
-                  <br />
-                  <small>
+                <li key={`${c.anoEleicao}-${c.turno}-${c.cargo}`} className="candidatura-item">
+                  <div className="candidatura-item__linha1">
+                    <span className="candidatura-item__ano">{c.anoEleicao}</span>
+                    <span className="candidatura-item__cargo">
+                      {c.cargo} ({c.sgUf})
+                    </span>
+                    <span>{c.sgPartido}</span>
+                    <span className="candidatura-item__situacao">{c.situacao}</span>
+                  </div>
+                  <small className="candidatura-item__fonte">
                     fonte:{" "}
                     {linkFonte ? <a href={linkFonte}>{c.fonteUrl}</a> : c.fonteUrl}, coletado em{" "}
                     {new Date(c.coletadoEm).toLocaleDateString("pt-BR")}
@@ -40,13 +73,15 @@ export default async function PaginaFicha({
           </ul>
         )}
       </section>
+
       {emailContato && (
-        <footer>
-          <a href={`mailto:${emailContato}?subject=${assuntoEmail}`}>
-            Encontrou um erro nesta ficha? Reporte aqui.
-          </a>
-        </footer>
+        <a
+          className="correcao-link"
+          href={`mailto:${emailContato}?subject=${assuntoEmail}`}
+        >
+          Encontrou um erro nesta ficha? Reporte aqui →
+        </a>
       )}
-    </main>
+    </div>
   );
 }
