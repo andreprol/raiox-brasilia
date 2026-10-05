@@ -39,7 +39,15 @@ export default async function PaginaFicha({
         <h1 className="ficha__nome">{ficha.nome}</h1>
         {cargoAtual && (
           <p className="ficha__meta">
-            {cargoAtual.cargo} · {cargoAtual.sgPartido} · {cargoAtual.sgUf}
+            {cargoAtual.cargo} · {cargoAtual.nmPartido} ({cargoAtual.sgPartido}) · {cargoAtual.sgUf}
+          </p>
+        )}
+        {(ficha.dataNascimento || ficha.ufNascimento) && (
+          <p className="ficha__meta">
+            {ficha.dataNascimento &&
+              `Nascimento: ${new Date(ficha.dataNascimento).toLocaleDateString("pt-BR", { timeZone: "UTC" })}`}
+            {ficha.dataNascimento && ficha.ufNascimento && " · "}
+            {ficha.ufNascimento && `Natural de ${ficha.ufNascimento}`}
           </p>
         )}
       </header>
@@ -59,13 +67,22 @@ export default async function PaginaFicha({
                     <span className="candidatura-item__cargo">
                       {c.cargo} ({c.sgUf})
                     </span>
-                    <span>{c.sgPartido}</span>
+                    <span>
+                      nº {c.nrCandidato} · {c.nmPartido} ({c.sgPartido})
+                    </span>
                     <span className="candidatura-item__situacao">{c.situacao}</span>
                   </div>
                   <small className="candidatura-item__fonte">
                     fonte:{" "}
-                    {linkFonte ? <a href={linkFonte}>{c.fonteUrl}</a> : c.fonteUrl}, coletado em{" "}
-                    {new Date(c.coletadoEm).toLocaleDateString("pt-BR")}
+                    {linkFonte ? (
+                      <a href={linkFonte} target="_blank" rel="noopener noreferrer">
+                        Tribunal Superior Eleitoral — base de candidaturas {c.anoEleicao} (arquivo
+                        consolidado nacional)
+                      </a>
+                    ) : (
+                      c.fonteUrl
+                    )}
+                    , coletado em {new Date(c.coletadoEm).toLocaleDateString("pt-BR")}
                   </small>
                 </li>
               );

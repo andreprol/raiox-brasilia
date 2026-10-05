@@ -7,7 +7,12 @@ const SLUG_TESTE = "candidato-teste-ficha-3a2b1c";
 beforeAll(async () => {
   const { data: pessoa, error } = await supabaseServidor
     .from("pessoa")
-    .insert({ slug: SLUG_TESTE, nome_civil: "Candidato Teste Ficha" })
+    .insert({
+      slug: SLUG_TESTE,
+      nome_civil: "Candidato Teste Ficha",
+      data_nascimento: "1980-05-20",
+      sg_uf_nascimento: "RR",
+    })
     .select("id")
     .single();
   if (error) throw error;
@@ -21,6 +26,7 @@ beforeAll(async () => {
     nr_candidato: "88888",
     nm_urna: "CANDIDATO TESTE FICHA",
     sg_partido: "PTB",
+    nm_partido: "Partido Trabalhista Brasileiro",
     situacao: "ELEITO",
     sq_candidato_tse: "999999999999994",
     fonte_url: "https://teste.local",
@@ -37,9 +43,13 @@ describe("buscarFicha", () => {
   it("retorna pessoa e suas candidaturas", async () => {
     const ficha = await buscarFicha(SLUG_TESTE);
     expect(ficha?.nome).toBe("Candidato Teste Ficha");
+    expect(ficha?.dataNascimento).toBe("1980-05-20");
+    expect(ficha?.ufNascimento).toBe("RR");
     expect(ficha?.candidaturas).toHaveLength(1);
     expect(ficha?.candidaturas[0].cargo).toBe("SENADOR");
     expect(ficha?.candidaturas[0].turno).toBe(1);
+    expect(ficha?.candidaturas[0].nrCandidato).toBe("88888");
+    expect(ficha?.candidaturas[0].nmPartido).toBe("Partido Trabalhista Brasileiro");
     expect(ficha?.candidaturas[0].fonteUrl).toBe("https://teste.local");
   });
 
@@ -157,5 +167,7 @@ describe("buscarFicha — visibilidade (oculto)", () => {
     expect(ficha?.nome).toBe("Pessoa Com Candidatura Oculta");
     expect(ficha?.candidaturas).toHaveLength(1);
     expect(ficha?.candidaturas[0].cargo).toBe("DEPUTADO ESTADUAL");
+    // Esta fixture não preenche nm_partido — cobre o fallback pra sigla.
+    expect(ficha?.candidaturas[0].nmPartido).toBe("PTB");
   });
 });
